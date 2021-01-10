@@ -1,5 +1,7 @@
 import themidibus.*; //Import the library
+import http.*;
 
+SimpleHTTPServer server;
 MidiBus myBus; // The MidiBus
 
 byte[] noteOn = new byte[16];
@@ -22,6 +24,8 @@ byte sysGoOff = byte(0x0B); //GO OFF
 
 void setup() {
   size(400, 400);
+  server = new SimpleHTTPServer(this); 
+  server.serve("style.css");
   
   midiNumberInit();
 
@@ -29,8 +33,6 @@ void setup() {
   background(0);
 
   MidiBus.list(); // List all available Midi devices on STDOUT. This will show each device's index and name.
-
-
 
   myBus = new MidiBus(this, -1, 3); // Create a new MidiBus with no input device and the default Java Sound Synthesizer as the output device.
 }
