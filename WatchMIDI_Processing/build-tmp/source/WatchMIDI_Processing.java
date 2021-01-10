@@ -20,12 +20,30 @@ public class WatchMIDI_Processing extends PApplet {
 
 MidiBus myBus; // The MidiBus
 
+byte[] noteOn = new byte[16];
+byte[] noteOff = new byte[16];
+byte[] noteControl = new byte[16];
+byte[] noteProgram = new byte[16];
+byte[] noteMIDI = new byte[128];
+byte sysCom0 = PApplet.parseByte(0x00); //RESERVED
+byte sysGO = PApplet.parseByte(0x01); //GO
+byte sysStop = PApplet.parseByte(0x02); //STOP
+byte sysResume = PApplet.parseByte(0x03); //RESUME
+byte sysTimedGo = PApplet.parseByte(0x04); //TIMED GO
+byte sysLoad = PApplet.parseByte(0x05); //LOAD
+byte sysSet = PApplet.parseByte(0x06); //SET
+byte sysFire = PApplet.parseByte(0x07); //FIRE
+byte sysAllOff = PApplet.parseByte(0x08); //ALL OFF
+byte sysRestore = PApplet.parseByte(0x09); //RESTORE
+byte sesReset = PApplet.parseByte(0xA); //RESET
+byte sysGoOff = PApplet.parseByte(0x0B); //GO OFF
+
 public void setup() {
   
-  byte[] chON = new byte[15];
+  
   midiNumberInit();
 
-  println(chON[0]);
+  println(noteOn[0]);
   background(0);
 
   MidiBus.list(); // List all available Midi devices on STDOUT. This will show each device's index and name.
@@ -39,15 +57,18 @@ public void draw() {
   int channel = 0;
   int pitch = 64;
   int velocity = 127;
+  
+  sendControl(noteMIDI[127],noteMIDI[1],sysGO);
+  delay(500);
+  sendControl(noteMIDI[127],noteMIDI[1],sysStop);
+  // myBus.sendNoteOn(channel, pitch, velocity); // Send a Midi noteOn
+  // delay(200);
+  // myBus.sendNoteOff(channel, pitch, velocity); // Send a Midi nodeOff
 
-  myBus.sendNoteOn(channel, pitch, velocity); // Send a Midi noteOn
-  delay(200);
-  myBus.sendNoteOff(channel, pitch, velocity); // Send a Midi nodeOff
+  // int number = 0;
+  // int value = 90;
 
-  int number = 0;
-  int value = 90;
-
-  myBus.sendControllerChange(channel, number, value); // Send a controllerChange
+  // myBus.sendControllerChange(channel, number, value); // Send a controllerChange
   delay(2000);
 
   //Or for something different we could send a custom Midi message ...
@@ -96,41 +117,55 @@ public void draw() {
   // }
 }
 
-public void noteOn(int channel, int pitch, int velocity) {
-  // Receive a noteOn
-  println();
-  println("Note On:");
-  println("--------");
-  println("Channel:"+channel);
-  println("Pitch:"+pitch);
-  println("Velocity:"+velocity);
+public void sendControl(byte device, byte format, byte command){
+  println("SYS MESSAGE:");
+  // myBus.sendMessage(new byte[] {byte(0xF0), byte(0x7F), byte(0x7F), byte(0x02), byte(0x01), byte(0x01), byte(0xF7)});
+  myBus.sendMessage(new byte[] {PApplet.parseByte(0xF0), PApplet.parseByte(0x7F), PApplet.parseByte(device), PApplet.parseByte(0x02), PApplet.parseByte(format), PApplet.parseByte(command), PApplet.parseByte(0xF7)});
+}
+public void midiNumberInit() {
+
+//----------------------------------
+	int noteStart = PApplet.parseByte(0x90);
+	for (int i = 0; i < 16; i++) {
+		noteOn[i] = PApplet.parseByte(noteStart + i);
+		println(i, noteOn[i], hex(noteOn[i]));
+	}
+//----------------------------------
+	noteStart = PApplet.parseByte(0x80);
+	for (int i = 0; i < 16; i++) {
+		noteOff[i] = PApplet.parseByte(noteStart + i);
+		println(i, noteOff[i], hex(noteOff[i]));
+	}
+//----------------------------------
+	noteStart = PApplet.parseByte(0xB0);
+	for (int i = 0; i < 16; i++) {
+		noteControl[i] = PApplet.parseByte(noteStart + i);
+		println(i, noteControl[i], hex(noteControl[i]));
+	}
+//----------------------------------
+	noteStart = PApplet.parseByte(0xC0);
+	for (int i = 0; i < 16; i++) {
+		noteProgram[i] = PApplet.parseByte(noteStart + i);
+		println(i, noteProgram[i], hex(noteProgram[i]));
+	}
+//----------------------------------
+	noteStart = PApplet.parseByte(0x00);
+	for (int i = 0; i < 128; i++) {
+		noteMIDI[i] = PApplet.parseByte(noteStart + i);
+		println(i, noteMIDI[i], hex(noteMIDI[i]));
+	}
+
+
+
 }
 
-public void noteOff(int channel, int pitch, int velocity) {
-  // Receive a noteOff
-  println();
-  println("Note Off:");
-  println("--------");
-  println("Channel:"+channel);
-  println("Pitch:"+pitch);
-  println("Velocity:"+velocity);
-}
 
-public void controllerChange(int channel, int number, int value) {
-  // Receive a controllerChange
-  println();
-  println("Controller Change:");
-  println("--------");
-  println("Channel:"+channel);
-  println("Number:"+number);
-  println("Value:"+value);
-}
 
-public void delay(int time) {
-  int current = millis();
-  while (millis () < current+time) Thread.yield();
-}
-
+// byte[] noteProgram = new byte[16];
+// byte[] noteMIDI = new byte[16];
+// byte[] noteShow = new byte[16];
+// byte[] noteFormat = new byte[16];
+// byte[] noteCommand = new byte[16];
   public void settings() {  size(400, 400); }
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "WatchMIDI_Processing" };

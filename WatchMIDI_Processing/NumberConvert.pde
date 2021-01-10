@@ -1,4 +1,44 @@
 void midiNumberInit() {
-  // byte[] chON = { byte(0x90), byte(0x91), byte(0x92), byte(0x93), byte(0x94), byte(0x95), byte(0x96), byte(0x97), byte(0x98), byte(0x99), byte(0x9A), byte(0x9B), byte(0x9C), byte(0x9D), byte(0x9E), byte(0x9F) };
-  chON[0] = byte(0x90);
+
+//----------------------------------
+	int noteStart = byte(0x90);
+	for (int i = 0; i < 16; i++) {
+		noteOn[i] = byte(noteStart + i);
+		println(i, noteOn[i], hex(noteOn[i]));
+	}
+//----------------------------------
+	noteStart = byte(0x80);
+	for (int i = 0; i < 16; i++) {
+		noteOff[i] = byte(noteStart + i);
+		println(i, noteOff[i], hex(noteOff[i]));
+	}
+//----------------------------------
+	noteStart = byte(0xB0);
+	for (int i = 0; i < 16; i++) {
+		noteControl[i] = byte(noteStart + i);
+		println(i, noteControl[i], hex(noteControl[i]));
+	}
+//----------------------------------
+	noteStart = byte(0xC0);
+	for (int i = 0; i < 16; i++) {
+		noteProgram[i] = byte(noteStart + i);
+		println(i, noteProgram[i], hex(noteProgram[i]));
+	}
+//----------------------------------
+	noteStart = byte(0x00);
+	for (int i = 0; i < 128; i++) {
+		noteMIDI[i] = byte(noteStart + i);
+		println(i, noteMIDI[i], hex(noteMIDI[i]));
+	}
+
+
+
 }
+
+
+
+// byte[] noteProgram = new byte[16];
+// byte[] noteMIDI = new byte[16];
+// byte[] noteShow = new byte[16];
+// byte[] noteFormat = new byte[16];
+// byte[] noteCommand = new byte[16];

@@ -2,14 +2,30 @@ import themidibus.*; //Import the library
 
 MidiBus myBus; // The MidiBus
 
-byte[] chON = new byte[15];
+byte[] noteOn = new byte[16];
+byte[] noteOff = new byte[16];
+byte[] noteControl = new byte[16];
+byte[] noteProgram = new byte[16];
+byte[] noteMIDI = new byte[128];
+byte sysCom0 = byte(0x00); //RESERVED
+byte sysGO = byte(0x01); //GO
+byte sysStop = byte(0x02); //STOP
+byte sysResume = byte(0x03); //RESUME
+byte sysTimedGo = byte(0x04); //TIMED GO
+byte sysLoad = byte(0x05); //LOAD
+byte sysSet = byte(0x06); //SET
+byte sysFire = byte(0x07); //FIRE
+byte sysAllOff = byte(0x08); //ALL OFF
+byte sysRestore = byte(0x09); //RESTORE
+byte sesReset = byte(0xA); //RESET
+byte sysGoOff = byte(0x0B); //GO OFF
 
 void setup() {
   size(400, 400);
   
   midiNumberInit();
 
-  println(chON[0]);
+  println(noteOn[0]);
   background(0);
 
   MidiBus.list(); // List all available Midi devices on STDOUT. This will show each device's index and name.
@@ -20,97 +36,18 @@ void setup() {
 }
 
 void draw() {
-  int channel = 0;
-  int pitch = 64;
-  int velocity = 127;
-
-  myBus.sendNoteOn(channel, pitch, velocity); // Send a Midi noteOn
-  delay(200);
-  myBus.sendNoteOff(channel, pitch, velocity); // Send a Midi nodeOff
-
-  int number = 0;
-  int value = 90;
-
-  myBus.sendControllerChange(channel, number, value); // Send a controllerChange
-  delay(2000);
-
-  //Or for something different we could send a custom Midi message ...
-
-  // int status_byte = 0xA0; // For instance let us send aftertouch
-  // int channel_byte = 0; // On channel 0 again
-  // int first_byte = 64; // The same note;
-  // int second_byte = 80; // But with less velocity
-
-  // myBus.sendMessage(status_byte, channel_byte, first_byte, second_byte);
-
-  //---------------------------------------------------------------------------
-
-  //Or for something different we could send a custom Midi message ...
-  // int status_byte = 0xA0; // For instance let us send aftertouch
-  // int channel_byte = 0; // On channel 0 again
-  // int first_byte = 64; // The same note;
-  // int second_byte = 80; // But with less velocity
-
-  // myBus.sendMessage(status_byte, channel_byte, first_byte, second_byte);
-
-  //---------------------------------------------------------------------------
   
-  //Or we could even send a variable length sysex message
-  //IMPORTANT: On mac you will have to use the MMJ MIDI subsystem to be able to send SysexMessages. Consult README.md for more information
+  sendControl(noteMIDI[127],noteMIDI[1],sysGO);
+  delay(500);
+  sendControl(noteMIDI[127],noteMIDI[1],sysStop);
+  // myBus.sendNoteOn(channel, pitch, velocity); // Send a Midi noteOn
+  // delay(200);
+  // myBus.sendNoteOff(channel, pitch, velocity); // Send a Midi nodeOff
 
-  // myBus.sendMessage(
-  //   new byte[] {
-  //     (byte)0xF0, (byte)0x1, (byte)0x2, (byte)0x3, (byte)0x4, (byte)0xF7
-  //   }
-  // );
-  // //We could also do the same thing this way ...
-
-  // try { //All the methods of SysexMessage, ShortMessage, etc, require try catch blocks
-  //   SysexMessage message = new SysexMessage();
-  //   message.setMessage(
-  //     0xF0, 
-  //     new byte[] {
-  //       (byte)0x5, (byte)0x6, (byte)0x7, (byte)0x8, (byte)0xF7
-  //     },
-  //     5
-  //   );
-  //   myBus.sendMessage(message);
-  // } catch(Exception e) {
-
-  // }
+  delay(2000);
 }
 
-void noteOn(int channel, int pitch, int velocity) {
-  // Receive a noteOn
-  println();
-  println("Note On:");
-  println("--------");
-  println("Channel:"+channel);
-  println("Pitch:"+pitch);
-  println("Velocity:"+velocity);
-}
-
-void noteOff(int channel, int pitch, int velocity) {
-  // Receive a noteOff
-  println();
-  println("Note Off:");
-  println("--------");
-  println("Channel:"+channel);
-  println("Pitch:"+pitch);
-  println("Velocity:"+velocity);
-}
-
-void controllerChange(int channel, int number, int value) {
-  // Receive a controllerChange
-  println();
-  println("Controller Change:");
-  println("--------");
-  println("Channel:"+channel);
-  println("Number:"+number);
-  println("Value:"+value);
-}
-
-void delay(int time) {
-  int current = millis();
-  while (millis () < current+time) Thread.yield();
+void sendControl(byte device, byte format, byte command){
+  println("SYS MESSAGE:");
+  myBus.sendMessage(new byte[] {byte(0xF0), byte(0x7F), byte(device), byte(0x02), byte(format), byte(command), byte(0xF7)});
 }
