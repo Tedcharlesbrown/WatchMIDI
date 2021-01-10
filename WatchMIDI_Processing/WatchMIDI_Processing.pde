@@ -2,11 +2,19 @@ import themidibus.*; //Import the library
 
 MidiBus myBus; // The MidiBus
 
+byte[] chON = new byte[15];
+
 void setup() {
   size(400, 400);
+  
+  midiNumberInit();
+
+  println(chON[0]);
   background(0);
 
   MidiBus.list(); // List all available Midi devices on STDOUT. This will show each device's index and name.
+
+
 
   myBus = new MidiBus(this, -1, 3); // Create a new MidiBus with no input device and the default Java Sound Synthesizer as the output device.
 }

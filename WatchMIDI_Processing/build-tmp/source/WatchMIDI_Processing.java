@@ -14,7 +14,7 @@ import java.io.InputStream;
 import java.io.OutputStream; 
 import java.io.IOException; 
 
-public class TCBMIDI extends PApplet {
+public class WatchMIDI_Processing extends PApplet {
 
  //Import the library
 
@@ -22,23 +22,16 @@ MidiBus myBus; // The MidiBus
 
 public void setup() {
   
+  byte[] chON = new byte[15];
+  midiNumberInit();
+
+  println(chON[0]);
   background(0);
 
   MidiBus.list(); // List all available Midi devices on STDOUT. This will show each device's index and name.
 
-  // Either you can
-  //                   Parent In Out
-  //                     |    |  |
-  //myBus = new MidiBus(this, 0, 1); // Create a new MidiBus using the device index to select the Midi input and output devices respectively.
 
-  // or you can ...
-  //                   Parent         In                   Out
-  //                     |            |                     |
-  //myBus = new MidiBus(this, "IncomingDeviceName", "OutgoingDeviceName"); // Create a new MidiBus using the device names to select the Midi input and output devices respectively.
 
-  // or for testing you could ...
-  //                 Parent  In        Out
-  //                   |     |          |
   myBus = new MidiBus(this, -1, 3); // Create a new MidiBus with no input device and the default Java Sound Synthesizer as the output device.
 }
 
@@ -56,6 +49,51 @@ public void draw() {
 
   myBus.sendControllerChange(channel, number, value); // Send a controllerChange
   delay(2000);
+
+  //Or for something different we could send a custom Midi message ...
+
+  // int status_byte = 0xA0; // For instance let us send aftertouch
+  // int channel_byte = 0; // On channel 0 again
+  // int first_byte = 64; // The same note;
+  // int second_byte = 80; // But with less velocity
+
+  // myBus.sendMessage(status_byte, channel_byte, first_byte, second_byte);
+
+  //---------------------------------------------------------------------------
+
+  //Or for something different we could send a custom Midi message ...
+  // int status_byte = 0xA0; // For instance let us send aftertouch
+  // int channel_byte = 0; // On channel 0 again
+  // int first_byte = 64; // The same note;
+  // int second_byte = 80; // But with less velocity
+
+  // myBus.sendMessage(status_byte, channel_byte, first_byte, second_byte);
+
+  //---------------------------------------------------------------------------
+  
+  //Or we could even send a variable length sysex message
+  //IMPORTANT: On mac you will have to use the MMJ MIDI subsystem to be able to send SysexMessages. Consult README.md for more information
+
+  // myBus.sendMessage(
+  //   new byte[] {
+  //     (byte)0xF0, (byte)0x1, (byte)0x2, (byte)0x3, (byte)0x4, (byte)0xF7
+  //   }
+  // );
+  // //We could also do the same thing this way ...
+
+  // try { //All the methods of SysexMessage, ShortMessage, etc, require try catch blocks
+  //   SysexMessage message = new SysexMessage();
+  //   message.setMessage(
+  //     0xF0, 
+  //     new byte[] {
+  //       (byte)0x5, (byte)0x6, (byte)0x7, (byte)0x8, (byte)0xF7
+  //     },
+  //     5
+  //   );
+  //   myBus.sendMessage(message);
+  // } catch(Exception e) {
+
+  // }
 }
 
 public void noteOn(int channel, int pitch, int velocity) {
@@ -92,9 +130,10 @@ public void delay(int time) {
   int current = millis();
   while (millis () < current+time) Thread.yield();
 }
+
   public void settings() {  size(400, 400); }
   static public void main(String[] passedArgs) {
-    String[] appletArgs = new String[] { "TCBMIDI" };
+    String[] appletArgs = new String[] { "WatchMIDI_Processing" };
     if (passedArgs != null) {
       PApplet.main(concat(appletArgs, passedArgs));
     } else {
