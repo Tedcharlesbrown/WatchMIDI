@@ -31,26 +31,26 @@ BUTTON button;
 public void setup() {
   classSetup();
   styleSetup();
+  gui.classSetup();
   // frame.setVisible(false);
   
-  
+
 
   try {
-  server = new SimpleHTTPServer(this); 
-  server.serve("style.css");
-} catch(Exception e) {
+    server = new SimpleHTTPServer(this);
+    server.serve("style.css");
+  } catch (Exception e) {
 
-}
-  
+  }
+
   midiNumberInit();
   // background(bgColor);
 
   // println(MidiBus.availableInputs());
   // printArray(MidiBus.availableOutputs());
 
-  // MidiBus.list(); // List all available Midi devices on STDOUT. This will show each device's index and name.
-
-  myBus = new MidiBus(this, -1, 3); // Create a new MidiBus with no input device and the default Java Sound Synthesizer as the output device.
+  myBus = new MidiBus(this, -1, 3);
+  // myBus.close();
 }
 
 public void update() {
@@ -62,9 +62,9 @@ public void draw() {
   gui.backgroundDraw();
   gui.headerDraw();
 
+  gui.midiDeviceInputOutputDraw();
 
-  gui.midiDeviceInputDraw();
-  gui.midiDeviceOutputDraw();
+
   // gui.midiThruDraw();
   // gui.midiSendDraw();
   // gui.midiMessagesDraw();
@@ -83,12 +83,26 @@ public void draw() {
   // delay(2000);
 }
 
-public void sendControl(byte device, byte format, byte command){
+public void sendControl(byte device, byte format, byte command) {
   println("SYS MESSAGE:");
   myBus.sendMessage(new byte[] {PApplet.parseByte(0xF0), PApplet.parseByte(0x7F), PApplet.parseByte(device), PApplet.parseByte(0x02), PApplet.parseByte(format), PApplet.parseByte(command), PApplet.parseByte(0xF7)});
 }
-class GUI {
 
+
+public void mousePressed() {
+  gui.touchDown();
+}
+
+public void mouseReleased() {
+  gui.touchUp();
+}
+class GUI {
+	CONTAINER inputDevices, outputDevices;
+
+	public void classSetup() {
+		inputDevices = new CONTAINER("INPUT DEVICES");
+		outputDevices = new CONTAINER("OUTPUT DEVICES");
+	}
 
 	public void backgroundDraw() {
 		background(bgColor);
@@ -98,19 +112,32 @@ class GUI {
 		push();
 		// rectMode(CENTER);
 		fill(headerColor);
-		rect(0,0,width,headerHeight);
+		rect(0, 0, width, headerHeight);
 		fill(shadow);
-		rect(0,headerHeight,width,dropShadow);
+		rect(0, headerHeight, width, dropShadow);
 
 		textAlign(CENTER, CENTER);
 		textSize(fontLarge);
 		fill(shadow);
-		text(headerName,centerX+dropShadow,headerCenter+dropShadow);	
+		text(headerName, centerX + dropShadow, headerCenter + dropShadow);
 		fill(white);
-		text(headerName,centerX,headerCenter);
+		text(headerName, centerX, headerCenter);
 
 		pop();
 	}
+
+	public void midiDeviceInputOutputDraw() {
+		inputDevices.update();
+		inputDevices.draw(columnLeft, headerPadding, containerWidth, centerY * 1.35f, "INPUT");
+		outputDevices.update();
+		outputDevices.draw(columnRight, headerPadding, containerWidth, centerY * 1.35f, "OUTPUT");
+	}
+
+
+
+
+
+
 
 	public void midiThruDraw() {
 		// push();
@@ -138,12 +165,12 @@ class GUI {
 		push();
 		pushMatrix();
 
-		translate(0,headerHeight + padding);
+		translate(0, headerHeight + padding);
 
 		fill(black);
 		stroke(grey);
-		strokeWeight(5);
-		rect(padding,0,centerX - padding * 1.5f, topContainerHeight);
+		strokeWeight(strokeWeight);
+		rect(padding, 0, centerX - padding * 1.5f, topContainerHeight);
 
 		popMatrix();
 		pop();
@@ -153,12 +180,12 @@ class GUI {
 		push();
 		pushMatrix();
 
-		translate(0,headerHeight + padding);
+		translate(0, headerHeight + padding);
 
 		fill(black);
 		stroke(grey);
-		strokeWeight(5);
-		rect(centerX + padding / 2,0,centerX - padding * 1.5f, topContainerHeight);
+		strokeWeight(strokeWeight);
+		rect(centerX + padding / 2, 0, centerX - padding * 1.5f, topContainerHeight);
 
 		popMatrix();
 		pop();
@@ -168,12 +195,12 @@ class GUI {
 		push();
 		pushMatrix();
 
-		translate(0,headerHeight + padding * 2 + topContainerHeight);
+		translate(0, headerHeight + padding * 2 + topContainerHeight);
 
 		fill(black);
 		stroke(grey);
-		strokeWeight(5);
-		rect(padding,0,width - padding * 2, bottomContainerHeight);
+		strokeWeight(strokeWeight);
+		rect(padding, 0, width - padding * 2, bottomContainerHeight);
 
 		popMatrix();
 		pop();
@@ -184,89 +211,26 @@ class GUI {
 	public void midiDeviceUpdate() {
 		push();
 		// println(MidiBus.availableOutputs().length);
-		arrayCopy(MidiBus.availableInputs(),midiInputArray);
-		arrayCopy(MidiBus.availableOutputs(),midiOutputArray);
+		arrayCopy(MidiBus.availableInputs(), midiInputArray);
+		arrayCopy(MidiBus.availableOutputs(), midiOutputArray);
 		// printArray(midiInputArray);
 		// printArray(midiOutputArray);
 		pop();
 	}
 
+//--------------------------------------------------------------
+// MARK: ---------- TOUCH EVENTS ----------
+//--------------------------------------------------------------
 
-
-	public void midiDeviceInputDraw() {
-		push();
-		pushMatrix();
-
-		translate(0,headerHeight + padding);
-
-		fill(black);
-		stroke(grey);
-		strokeWeight(5);
-		rect(padding,0,containerWidth, centerY * 1.35f);
-
-		fill(headerColor);
-		rect(padding,0,containerWidth,padding * 2);
-
-		fill(white);
-		textSize(fontMedium);
-		textAlign(CENTER,CENTER);
-		text("INPUT DEVICES",containerWidth / 2 + padding,padding);
-
-		textAlign(RIGHT, CENTER);
-		textSize(fontSmall);
-		fill(white);
-		int paddingMultiplier = 3;
-
-		int arrayLength = MidiBus.availableInputs().length;
-		if (MidiBus.availableInputs().length > 15) {
-			arrayLength = 15;
-		}
-		for (int i = 0; i < MidiBus.availableInputs().length; i++) {
-			text(midiInputArray[i],containerWidth + padding / 2,padding * paddingMultiplier);
-			paddingMultiplier++;
-		}
-
-		popMatrix();
-		pop();
+	public void touchDown() {
+		inputDevices.touchDown();
+		outputDevices.touchDown();
 	}
 
-	public void midiDeviceOutputDraw() {
-		push();
-		pushMatrix();
-
-		translate(centerX - padding / 2,headerHeight + padding);
-
-		fill(black);
-		stroke(155);
-		strokeWeight(5);
-		rect(padding,0,containerWidth, centerY * 1.35f);
-
-		fill(headerColor);
-		rect(padding,0,containerWidth,padding * 2);
-
-		fill(white);
-		textSize(fontMedium);
-		textAlign(CENTER,CENTER);
-		text("OUTPUT DEVICES",containerWidth / 2 + padding,padding);
-
-		textAlign(RIGHT, CENTER);
-		textSize(fontSmall);
-		fill(white);
-		int paddingMultiplier = 3;
-
-		int arrayLength = MidiBus.availableOutputs().length;
-		if (MidiBus.availableOutputs().length > 15) {
-			arrayLength = 15;
-		}
-		for (int i = 0; i < arrayLength; i++) {
-			text(midiOutputArray[i],containerWidth + padding / 2,padding * paddingMultiplier);
-			paddingMultiplier++;
-		}
-
-		popMatrix();
-		pop();
+	public void touchUp() {
+		inputDevices.touchUp();
+		outputDevices.touchUp();
 	}
-
 
 }
 byte[] noteOn = new byte[16];
@@ -382,6 +346,186 @@ class BUTTON {
 	}
 
 }
+class CONTAINER {
+	ArrayList<HIGHLIGHTBUTTON> inputSelectButton = new ArrayList<HIGHLIGHTBUTTON>();
+	ArrayList<HIGHLIGHTBUTTON> outputSelectButton = new ArrayList<HIGHLIGHTBUTTON>();
+
+	String ID;
+	String CASE;
+	float x, y, w, h;
+
+	CONTAINER(String _ID) {
+		this.ID = _ID;
+		for (int i = 0; i < 15; i++) {
+			inputSelectButton.add(new HIGHLIGHTBUTTON());
+			outputSelectButton.add(new HIGHLIGHTBUTTON());
+		}
+	}
+
+	public void update() {
+		for (int i = 0; i < 15; i++) {
+			if (inputSelectButton.get(i).action == true && inputSelectButton.get(i).clicked == true) {
+				for (int j = 0; j < 15; j++) {
+					inputSelectButton.get(j).clicked = false;
+				}
+				inputSelectButton.get(i).action = false;
+				inputSelectButton.get(i).clicked = true;
+			}
+		}
+
+		for (int i = 0; i < 15; i++) {
+			if (outputSelectButton.get(i).action == true && outputSelectButton.get(i).clicked == true) {
+				for (int j = 0; j < 15; j++) {
+					outputSelectButton.get(j).clicked = false;
+				}
+				outputSelectButton.get(i).action = false;
+				outputSelectButton.get(i).clicked = true;
+			}
+		}
+	}
+
+	public void draw(float _x, float _y, float _w, float _h, String _case) {
+		this.CASE = _case;
+		this.x = _x;
+		push();
+		pushMatrix();
+
+		noFill();
+		stroke(grey);
+		strokeWeight(strokeWeight);
+		rect(_x + padding, _y, _w, _h);
+
+		fill(headerColor);
+		rect(_x + padding, _y, containerWidth, padding * 2);
+
+		fill(white);
+		textSize(fontMedium);
+		textAlign(CENTER, CENTER);
+		text(this.ID, _x + containerWidth / 2 + padding, headerPadding + padding);
+
+		if (this.CASE == "INPUT") {
+			inputDraw();
+		} else if (this.CASE == "OUTPUT") {
+			outputDraw();
+		}
+
+		popMatrix();
+		pop();
+	}
+
+	public void inputDraw() {
+		textAlign(RIGHT, CENTER);
+		textSize(fontSmall);
+		fill(white);
+		float paddingMultiplier = 7.25f;
+
+		int arrayLength = MidiBus.availableInputs().length;
+		if (MidiBus.availableInputs().length > 15) {
+			arrayLength = 15;
+		}
+		for (int i = 0; i < MidiBus.availableInputs().length; i++) {
+			inputSelectButton.get(i).hover();
+			inputSelectButton.get(i).show("I", i, columnCenter, padding * paddingMultiplier, containerWidth - strokeWeight, padding);
+			text(midiInputArray[i], this.x + containerWidth + padding / 2, padding * paddingMultiplier);
+			paddingMultiplier++;
+		}
+	}
+
+	public void outputDraw() {
+		textAlign(RIGHT, CENTER);
+		textSize(fontSmall);
+		fill(white);
+		float paddingMultiplier = 7.25f;
+
+		int arrayLength = MidiBus.availableOutputs().length;
+		if (MidiBus.availableOutputs().length > 15) {
+			arrayLength = 15;
+		}
+		for (int i = 0; i < MidiBus.availableOutputs().length; i++) {
+			outputSelectButton.get(i).hover();
+			outputSelectButton.get(i).show("O", i, this.x + columnCenter, padding * paddingMultiplier, containerWidth - strokeWeight, padding);
+			text(midiOutputArray[i], this.x + containerWidth + padding / 1.5f, padding * paddingMultiplier);
+			paddingMultiplier++;
+		}
+	}
+
+	public void touchDown() {
+		for (int i = 0; i < 15; i++) {
+			inputSelectButton.get(i).touchDown();
+			outputSelectButton.get(i).touchDown();
+		}
+	}
+
+	public void touchUp() {
+		for (int i = 0; i < 15; i++) {
+			inputSelectButton.get(i).touchUp();
+			outputSelectButton.get(i).touchUp();
+		}
+	}
+
+}
+class HIGHLIGHTBUTTON {
+	float x, y, w, h;
+	String ID;
+	int ID2;
+	boolean hover = false;
+	boolean clicked = false;
+	boolean action = false;
+	boolean released = false;
+
+	int buttonCorner = 10;
+
+	public void hover() {
+		if (mouseX > x - w / 2 && mouseX < x + w / 2 && mouseY > y - h / 2 && mouseY < y + h / 2) {
+			this.hover = true;
+		} else {
+			this.hover = false;
+		}
+	}
+
+	public void show(String _ID, int _ID2, float _x, float _y, float _w, float _h) { //ONE TEXT
+		this.x = _x;
+		this.y = _y;
+		this.w = _w;
+		this.h = _h;
+		this.ID = _ID;
+		this.ID2 = _ID2;
+
+		push();
+		rectMode(CENTER);
+		noStroke();
+		if (this.clicked) {
+			fill(grey);
+		} else if (this.hover) {
+			fill(grey / 2);
+		} else {
+			fill(bgColor);
+		}
+
+		rect(_x, _y, _w, _h);
+
+		pop();
+
+	}
+
+
+	public void touchDown() {
+		if (mouseX > x - w / 2 && mouseX < x + w / 2 && mouseY > y - h / 2 && mouseY < y + h / 2) {
+			this.clicked = true;
+			this.action = true;
+			// println(this.ID, this.ID2);
+		}
+	}
+
+	public void touchUp() {
+		if (clicked) {
+			this.released = true;
+		}
+		// this.clicked = false;
+	}
+
+
+}
 //COLORS
 int white = 255;
 int black = 0;
@@ -395,9 +539,13 @@ int headerColor = 0xff343434;
 float centerX, centerY;
 float headerHeight, headerCenter;
 
+float columnLeft, columnRight;
+float headerPadding;
 float topContainerHeight, bottomContainerHeight;
 float containerWidth, containerFullWidth;
+float columnCenter;
 float padding = 15;
+float strokeWeight = 5;
 
 //TEXT
 String headerName = "MIDI NETWORK GATE";
@@ -414,15 +562,20 @@ public void styleSetup() {
 	centerX = width / 2;
 	centerY = height / 2;
 
+	columnLeft = 0;
+	columnRight = centerX - padding / 2;
 
 	headerHeight = height / 8;
 	headerCenter = headerHeight / 2;
+	headerPadding = headerHeight + padding;
 
 	topContainerHeight = centerY / 1.5f;
 	bottomContainerHeight = centerY / 1.15f;
 
 	containerWidth = centerX - padding * 1.5f;
 	containerFullWidth = width - padding * 2;
+
+	columnCenter = containerWidth / 2 + padding;
 
 
 	//TEXT

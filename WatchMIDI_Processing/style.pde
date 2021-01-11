@@ -11,9 +11,13 @@ color headerColor = #343434;
 float centerX, centerY;
 float headerHeight, headerCenter;
 
+float columnLeft, columnRight;
+float headerPadding;
 float topContainerHeight, bottomContainerHeight;
 float containerWidth, containerFullWidth;
+float columnCenter;
 float padding = 15;
+float strokeWeight = 5;
 
 //TEXT
 String headerName = "MIDI NETWORK GATE";
@@ -30,15 +34,20 @@ void styleSetup() {
 	centerX = width / 2;
 	centerY = height / 2;
 
+	columnLeft = 0;
+	columnRight = centerX - padding / 2;
 
 	headerHeight = height / 8;
 	headerCenter = headerHeight / 2;
+	headerPadding = headerHeight + padding;
 
 	topContainerHeight = centerY / 1.5;
 	bottomContainerHeight = centerY / 1.15;
 
 	containerWidth = centerX - padding * 1.5;
 	containerFullWidth = width - padding * 2;
+
+	columnCenter = containerWidth / 2 + padding;
 
 
 	//TEXT

@@ -12,26 +12,26 @@ BUTTON button;
 void setup() {
   classSetup();
   styleSetup();
+  gui.classSetup();
   // frame.setVisible(false);
   size(400, 400);
-  
+
 
   try {
-  server = new SimpleHTTPServer(this); 
-  server.serve("style.css");
-} catch(Exception e) {
+    server = new SimpleHTTPServer(this);
+    server.serve("style.css");
+  } catch (Exception e) {
 
-}
-  
+  }
+
   midiNumberInit();
   // background(bgColor);
 
   // println(MidiBus.availableInputs());
   // printArray(MidiBus.availableOutputs());
 
-  // MidiBus.list(); // List all available Midi devices on STDOUT. This will show each device's index and name.
-
-  myBus = new MidiBus(this, -1, 3); // Create a new MidiBus with no input device and the default Java Sound Synthesizer as the output device.
+  myBus = new MidiBus(this, -1, 3);
+  // myBus.close();
 }
 
 void update() {
@@ -43,9 +43,9 @@ void draw() {
   gui.backgroundDraw();
   gui.headerDraw();
 
+  gui.midiDeviceInputOutputDraw();
 
-  gui.midiDeviceInputDraw();
-  gui.midiDeviceOutputDraw();
+
   // gui.midiThruDraw();
   // gui.midiSendDraw();
   // gui.midiMessagesDraw();
@@ -64,7 +64,16 @@ void draw() {
   // delay(2000);
 }
 
-void sendControl(byte device, byte format, byte command){
+void sendControl(byte device, byte format, byte command) {
   println("SYS MESSAGE:");
   myBus.sendMessage(new byte[] {byte(0xF0), byte(0x7F), byte(device), byte(0x02), byte(format), byte(command), byte(0xF7)});
+}
+
+
+void mousePressed() {
+  gui.touchDown();
+}
+
+void mouseReleased() {
+  gui.touchUp();
 }
