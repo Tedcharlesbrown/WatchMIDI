@@ -111,13 +111,25 @@ class GUI {
 
 
 	void midiDeviceUpdate() {
-		push();
-		// println(MidiBus.availableOutputs().length);
+		midiInputLength = MidiBus.availableInputs().length;
+		midiOutputLength = MidiBus.availableOutputs().length;
+
+		// if (midiInputLength > 1) {
+		// 	arrayCopy(MidiBus.availableInputs(), 1, midiInputArray, 0, midiInputLength  - 1);
+		// } else {
+		// 	midiInputArray[0] = "NO INPUT DEVICE";
+		// }
+
+
+		// if (midiOutputLength > 1) {
+		// 	arrayCopy(MidiBus.availableOutputs(), 1, midiOutputArray, 0, midiOutputLength  - 1);
+		// } else {
+		// 	midiOutputArray[0] = "NO OUTPUT DEVICE";
+		// }
+
 		arrayCopy(MidiBus.availableInputs(), midiInputArray);
 		arrayCopy(MidiBus.availableOutputs(), midiOutputArray);
-		// printArray(midiInputArray);
-		// printArray(midiOutputArray);
-		pop();
+
 	}
 
 //--------------------------------------------------------------

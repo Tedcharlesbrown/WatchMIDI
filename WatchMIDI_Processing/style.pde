@@ -29,6 +29,8 @@ float dropShadow = 5;
 String[] midiInputArray = new String[100];
 String[] midiOutputArray = new String[100];
 
+int midiInputLength, midiOutputLength;
+
 void styleSetup() {
 	//SIZES
 	centerX = width / 2;
