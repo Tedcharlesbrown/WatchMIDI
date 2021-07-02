@@ -23,8 +23,6 @@ public class WatchMIDI_Processing extends PApplet {
 SimpleHTTPServer server;
 MidiBus myBus; // The MidiBus
 
-
-
 GUI gui;
 BUTTON button;
 
@@ -47,22 +45,19 @@ public void setup() {
   // background(bgColor);
 
   // println(MidiBus.availableInputs());
-  // printArray(MidiBus.availableOutputs());
+  printArray(MidiBus.availableOutputs());
 
-  myBus = new MidiBus(this, -1, 3);
+  myBus = new MidiBus(this, 0, 0);
   // myBus.close();
 }
 
 public void update() {
-  gui.midiDeviceUpdate();
+  gui.update();
 }
 
 public void draw() {
   update();
-  gui.backgroundDraw();
-  gui.headerDraw();
-
-  gui.midiDeviceInputOutputDraw();
+  gui.draw();
 
 
   // gui.midiThruDraw();
@@ -91,6 +86,7 @@ public void sendControl(byte device, byte format, byte command) {
 
 public void mousePressed() {
   gui.touchDown();
+
 }
 
 public void mouseReleased() {
@@ -98,10 +94,38 @@ public void mouseReleased() {
 }
 class GUI {
 	CONTAINER inputDevices, outputDevices;
+	BUTTON midiSubmit;
+
+	boolean midiSelectMenu = false;
 
 	public void classSetup() {
-		inputDevices = new CONTAINER("INPUT DEVICES");
-		outputDevices = new CONTAINER("OUTPUT DEVICES");
+		inputDevices = new CONTAINER("INPUT");
+		outputDevices = new CONTAINER("OUTPUT");
+		midiSubmit = new BUTTON();
+	}
+
+	public void update() {
+		if (midiSelectMenu == true) {
+			midiDeviceUpdate();
+			midiDeviceInputOutputUpdate();
+		} else {
+
+
+		}
+	}
+
+	public void draw() {
+		backgroundDraw();
+		headerDraw();
+		if (midiSelectMenu == true) {
+			midiDeviceInputOutputDraw();
+		} else {
+			midiThruDraw();
+			midiSendDraw();
+			midiMessagesDraw();
+		}
+
+
 	}
 
 	public void backgroundDraw() {
@@ -126,17 +150,44 @@ class GUI {
 		pop();
 	}
 
+		public void midiDeviceUpdate() {
+		midiInputLength = MidiBus.availableInputs().length;
+		midiOutputLength = MidiBus.availableOutputs().length;
+
+		// if (midiInputLength > 1) {
+		// 	arrayCopy(MidiBus.availableInputs(), 1, midiInputArray, 0, midiInputLength  - 1);
+		// } else {
+		// 	midiInputArray[0] = "NO INPUT DEVICE";
+		// }
+
+
+		// if (midiOutputLength > 1) {
+		// 	arrayCopy(MidiBus.availableOutputs(), 1, midiOutputArray, 0, midiOutputLength  - 1);
+		// } else {
+		// 	midiOutputArray[0] = "NO OUTPUT DEVICE";
+		// }
+
+		arrayCopy(MidiBus.availableInputs(), midiInputArray);
+		arrayCopy(MidiBus.availableOutputs(), midiOutputArray);
+
+	}
+
+	public void midiDeviceInputOutputUpdate() {
+		if (midiSubmit.action == true) {
+			midiSubmit.action = false;
+			myBus.close();
+			myBus = new MidiBus(this, inputDevices.userSelect, outputDevices.userSelect);
+			println("CHANGING MIDI DEVICES: ", inputDevices.userSelect, outputDevices.userSelect);
+		}
+	}
+
 	public void midiDeviceInputOutputDraw() {
 		inputDevices.update();
 		inputDevices.draw(columnLeft, headerPadding, containerWidth, centerY * 1.35f, "INPUT");
 		outputDevices.update();
 		outputDevices.draw(columnRight, headerPadding, containerWidth, centerY * 1.35f, "OUTPUT");
+		midiSubmit.show("SUBMIT", centerX, height - headerPadding / 2, containerWidth, headerHeight / 1.5f);
 	}
-
-
-
-
-
 
 
 	public void midiThruDraw() {
@@ -206,42 +257,29 @@ class GUI {
 		pop();
 	}
 
-
-
-	public void midiDeviceUpdate() {
-		midiInputLength = MidiBus.availableInputs().length;
-		midiOutputLength = MidiBus.availableOutputs().length;
-
-		// if (midiInputLength > 1) {
-		// 	arrayCopy(MidiBus.availableInputs(), 1, midiInputArray, 0, midiInputLength  - 1);
-		// } else {
-		// 	midiInputArray[0] = "NO INPUT DEVICE";
-		// }
-
-
-		// if (midiOutputLength > 1) {
-		// 	arrayCopy(MidiBus.availableOutputs(), 1, midiOutputArray, 0, midiOutputLength  - 1);
-		// } else {
-		// 	midiOutputArray[0] = "NO OUTPUT DEVICE";
-		// }
-
-		arrayCopy(MidiBus.availableInputs(), midiInputArray);
-		arrayCopy(MidiBus.availableOutputs(), midiOutputArray);
-
-	}
-
 //--------------------------------------------------------------
 // MARK: ---------- TOUCH EVENTS ----------
 //--------------------------------------------------------------
 
 	public void touchDown() {
+		if (mouseY < headerHeight) {
+			if (midiSelectMenu == true) {
+				midiSelectMenu = false;
+			} else {
+				midiSelectMenu = true;
+			}
+		}
+
+
 		inputDevices.touchDown();
 		outputDevices.touchDown();
+		midiSubmit.touchDown();
 	}
 
 	public void touchUp() {
 		inputDevices.touchUp();
 		outputDevices.touchUp();
+		midiSubmit.touchUp();
 	}
 
 }
@@ -317,7 +355,7 @@ class BUTTON {
 
 	int buttonCorner = 10;
 
-	public void show(String _ID, float _x, float _y, float _w, float _h, String _size) { //ONE TEXT
+	public void show(String _ID, float _x, float _y, float _w, float _h) { //ONE TEXT
 		this.x = _x;
 		this.y = _y;
 		this.w = _w;
@@ -326,8 +364,8 @@ class BUTTON {
 		push();
 		rectMode(CENTER);
 
-		stroke(255);
-		strokeWeight(10);
+		stroke(grey);
+		strokeWeight(strokeWeight);
 		if (this.clicked) {
 			fill(100);
 		} else {
@@ -336,25 +374,33 @@ class BUTTON {
 
 		rect(_x, _y, _w, _h, buttonCorner);
 
-		// try {
+		try {
+			textSize(fontMedium);
+			textAlign(CENTER, CENTER);
+			fill(255);
 
-		// 	textAlign(CENTER, CENTER);
-		// 	fill(255);
+			text(_ID, _x, _y - fontMedium / 8); //INPUT
 
-		// 	if (_size == "LARGE") {
-		// 		textFont(fontLarge);
-		// 	} else if (_size == "MEDIUM") {
-		// 		textFont(fontMedium);
-		// 	} else if (_size == "SMALL") {
-		// 		textFont(fontSmall);
-		// 	}
-		// 	text(_ID, _x, _y); //INPUT
+		} catch (Exception e) {
 
-		// } catch (Exception e) {
-
-		// }
+		}
 
 		pop();
+	}
+
+	public void touchDown() {
+		if (mouseX > x - w / 2 && mouseX < x + w / 2 && mouseY > y - h / 2 && mouseY < y + h / 2) {
+			this.clicked = true;
+			this.action = true;
+			// println(this.ID, this.ID2);
+		}
+	}
+
+	public void touchUp() {
+		if (clicked) {
+			this.released = true;
+		}
+		this.clicked = false;
 	}
 
 }
@@ -365,6 +411,8 @@ class CONTAINER {
 	String ID;
 	String CASE;
 	float x, y, w, h;
+
+	int userSelect;
 
 	CONTAINER(String _ID) {
 		this.ID = _ID;
@@ -382,6 +430,7 @@ class CONTAINER {
 				}
 				inputSelectButton.get(i).action = false;
 				inputSelectButton.get(i).clicked = true;
+				userSelect = i;
 			}
 		}
 
@@ -392,6 +441,7 @@ class CONTAINER {
 				}
 				outputSelectButton.get(i).action = false;
 				outputSelectButton.get(i).clicked = true;
+				userSelect = i;
 			}
 		}
 	}
@@ -435,11 +485,13 @@ class CONTAINER {
 		if (MidiBus.availableInputs().length > 15) {
 			arrayLength = 15;
 		}
-		for (int i = 0; i < MidiBus.availableInputs().length; i++) {
-			inputSelectButton.get(i).hover();
-			inputSelectButton.get(i).show("I", i, columnCenter, padding * paddingMultiplier, containerWidth - strokeWeight, padding);
-			text(midiInputArray[i], this.x + containerWidth + padding / 2, padding * paddingMultiplier);
-			paddingMultiplier++;
+		if (MidiBus.availableInputs().length > 0) {
+			for (int i = 0; i < MidiBus.availableInputs().length; i++) {
+				inputSelectButton.get(i).hover();
+				inputSelectButton.get(i).show("I", i, columnCenter, padding * paddingMultiplier, containerWidth - strokeWeight, padding);
+				text(midiInputArray[i], this.x + containerWidth + padding / 2, padding * paddingMultiplier);
+				paddingMultiplier++;
+			}
 		}
 	}
 
@@ -453,11 +505,13 @@ class CONTAINER {
 		if (MidiBus.availableOutputs().length > 15) {
 			arrayLength = 15;
 		}
-		for (int i = 0; i < MidiBus.availableOutputs().length; i++) {
-			outputSelectButton.get(i).hover();
-			outputSelectButton.get(i).show("O", i, this.x + columnCenter, padding * paddingMultiplier, containerWidth - strokeWeight, padding);
-			text(midiOutputArray[i], this.x + containerWidth + padding / 1.5f, padding * paddingMultiplier);
-			paddingMultiplier++;
+		if (MidiBus.availableOutputs().length > 0) {
+			for (int i = 0; i < MidiBus.availableOutputs().length; i++) {
+				outputSelectButton.get(i).hover();
+				outputSelectButton.get(i).show("O", i, this.x + columnCenter, padding * paddingMultiplier, containerWidth - strokeWeight, padding);
+				text(midiOutputArray[i], this.x + containerWidth + padding / 1.5f, padding * paddingMultiplier);
+				paddingMultiplier++;
+			}
 		}
 	}
 

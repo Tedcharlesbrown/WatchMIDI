@@ -7,7 +7,7 @@ class BUTTON {
 
 	int buttonCorner = 10;
 
-	void show(String _ID, float _x, float _y, float _w, float _h, String _size) { //ONE TEXT
+	void show(String _ID, float _x, float _y, float _w, float _h) { //ONE TEXT
 		this.x = _x;
 		this.y = _y;
 		this.w = _w;
@@ -16,8 +16,8 @@ class BUTTON {
 		push();
 		rectMode(CENTER);
 
-		stroke(255);
-		strokeWeight(10);
+		stroke(grey);
+		strokeWeight(strokeWeight);
 		if (this.clicked) {
 			fill(100);
 		} else {
@@ -26,25 +26,33 @@ class BUTTON {
 
 		rect(_x, _y, _w, _h, buttonCorner);
 
-		// try {
+		try {
+			textSize(fontMedium);
+			textAlign(CENTER, CENTER);
+			fill(255);
 
-		// 	textAlign(CENTER, CENTER);
-		// 	fill(255);
+			text(_ID, _x, _y - fontMedium / 8); //INPUT
 
-		// 	if (_size == "LARGE") {
-		// 		textFont(fontLarge);
-		// 	} else if (_size == "MEDIUM") {
-		// 		textFont(fontMedium);
-		// 	} else if (_size == "SMALL") {
-		// 		textFont(fontSmall);
-		// 	}
-		// 	text(_ID, _x, _y); //INPUT
+		} catch (Exception e) {
 
-		// } catch (Exception e) {
-
-		// }
+		}
 
 		pop();
+	}
+
+	void touchDown() {
+		if (mouseX > x - w / 2 && mouseX < x + w / 2 && mouseY > y - h / 2 && mouseY < y + h / 2) {
+			this.clicked = true;
+			this.action = true;
+			// println(this.ID, this.ID2);
+		}
+	}
+
+	void touchUp() {
+		if (clicked) {
+			this.released = true;
+		}
+		this.clicked = false;
 	}
 
 }

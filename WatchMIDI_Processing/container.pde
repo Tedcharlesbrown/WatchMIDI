@@ -6,6 +6,8 @@ class CONTAINER {
 	String CASE;
 	float x, y, w, h;
 
+	int userSelect;
+
 	CONTAINER(String _ID) {
 		this.ID = _ID;
 		for (int i = 0; i < 15; i++) {
@@ -22,6 +24,7 @@ class CONTAINER {
 				}
 				inputSelectButton.get(i).action = false;
 				inputSelectButton.get(i).clicked = true;
+				userSelect = i;
 			}
 		}
 
@@ -32,6 +35,7 @@ class CONTAINER {
 				}
 				outputSelectButton.get(i).action = false;
 				outputSelectButton.get(i).clicked = true;
+				userSelect = i;
 			}
 		}
 	}
@@ -75,11 +79,13 @@ class CONTAINER {
 		if (MidiBus.availableInputs().length > 15) {
 			arrayLength = 15;
 		}
-		for (int i = 0; i < MidiBus.availableInputs().length; i++) {
-			inputSelectButton.get(i).hover();
-			inputSelectButton.get(i).show("I", i, columnCenter, padding * paddingMultiplier, containerWidth - strokeWeight, padding);
-			text(midiInputArray[i], this.x + containerWidth + padding / 2, padding * paddingMultiplier);
-			paddingMultiplier++;
+		if (MidiBus.availableInputs().length > 0) {
+			for (int i = 0; i < MidiBus.availableInputs().length; i++) {
+				inputSelectButton.get(i).hover();
+				inputSelectButton.get(i).show("I", i, columnCenter, padding * paddingMultiplier, containerWidth - strokeWeight, padding);
+				text(midiInputArray[i], this.x + containerWidth + padding / 2, padding * paddingMultiplier);
+				paddingMultiplier++;
+			}
 		}
 	}
 
@@ -93,11 +99,13 @@ class CONTAINER {
 		if (MidiBus.availableOutputs().length > 15) {
 			arrayLength = 15;
 		}
-		for (int i = 0; i < MidiBus.availableOutputs().length; i++) {
-			outputSelectButton.get(i).hover();
-			outputSelectButton.get(i).show("O", i, this.x + columnCenter, padding * paddingMultiplier, containerWidth - strokeWeight, padding);
-			text(midiOutputArray[i], this.x + containerWidth + padding / 1.5, padding * paddingMultiplier);
-			paddingMultiplier++;
+		if (MidiBus.availableOutputs().length > 0) {
+			for (int i = 0; i < MidiBus.availableOutputs().length; i++) {
+				outputSelectButton.get(i).hover();
+				outputSelectButton.get(i).show("O", i, this.x + columnCenter, padding * paddingMultiplier, containerWidth - strokeWeight, padding);
+				text(midiOutputArray[i], this.x + containerWidth + padding / 1.5, padding * paddingMultiplier);
+				paddingMultiplier++;
+			}
 		}
 	}
 

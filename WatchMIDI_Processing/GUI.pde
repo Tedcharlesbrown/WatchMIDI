@@ -1,9 +1,37 @@
 class GUI {
 	CONTAINER inputDevices, outputDevices;
+	BUTTON midiSubmit;
+
+	boolean midiSelectMenu = false;
 
 	void classSetup() {
-		inputDevices = new CONTAINER("INPUT DEVICES");
-		outputDevices = new CONTAINER("OUTPUT DEVICES");
+		inputDevices = new CONTAINER("INPUT");
+		outputDevices = new CONTAINER("OUTPUT");
+		midiSubmit = new BUTTON();
+	}
+
+	void update() {
+		if (midiSelectMenu == true) {
+			midiDeviceUpdate();
+			midiDeviceInputOutputUpdate();
+		} else {
+
+
+		}
+	}
+
+	void draw() {
+		backgroundDraw();
+		headerDraw();
+		if (midiSelectMenu == true) {
+			midiDeviceInputOutputDraw();
+		} else {
+			midiThruDraw();
+			midiSendDraw();
+			midiMessagesDraw();
+		}
+
+
 	}
 
 	void backgroundDraw() {
@@ -28,17 +56,44 @@ class GUI {
 		pop();
 	}
 
+		void midiDeviceUpdate() {
+		midiInputLength = MidiBus.availableInputs().length;
+		midiOutputLength = MidiBus.availableOutputs().length;
+
+		// if (midiInputLength > 1) {
+		// 	arrayCopy(MidiBus.availableInputs(), 1, midiInputArray, 0, midiInputLength  - 1);
+		// } else {
+		// 	midiInputArray[0] = "NO INPUT DEVICE";
+		// }
+
+
+		// if (midiOutputLength > 1) {
+		// 	arrayCopy(MidiBus.availableOutputs(), 1, midiOutputArray, 0, midiOutputLength  - 1);
+		// } else {
+		// 	midiOutputArray[0] = "NO OUTPUT DEVICE";
+		// }
+
+		arrayCopy(MidiBus.availableInputs(), midiInputArray);
+		arrayCopy(MidiBus.availableOutputs(), midiOutputArray);
+
+	}
+
+	void midiDeviceInputOutputUpdate() {
+		if (midiSubmit.action == true) {
+			midiSubmit.action = false;
+			myBus.close();
+			myBus = new MidiBus(this, inputDevices.userSelect, outputDevices.userSelect);
+			println("CHANGING MIDI DEVICES: ", inputDevices.userSelect, outputDevices.userSelect);
+		}
+	}
+
 	void midiDeviceInputOutputDraw() {
 		inputDevices.update();
 		inputDevices.draw(columnLeft, headerPadding, containerWidth, centerY * 1.35, "INPUT");
 		outputDevices.update();
 		outputDevices.draw(columnRight, headerPadding, containerWidth, centerY * 1.35, "OUTPUT");
+		midiSubmit.show("SUBMIT", centerX, height - headerPadding / 2, containerWidth, headerHeight / 1.5);
 	}
-
-
-
-
-
 
 
 	void midiThruDraw() {
@@ -108,42 +163,29 @@ class GUI {
 		pop();
 	}
 
-
-
-	void midiDeviceUpdate() {
-		midiInputLength = MidiBus.availableInputs().length;
-		midiOutputLength = MidiBus.availableOutputs().length;
-
-		// if (midiInputLength > 1) {
-		// 	arrayCopy(MidiBus.availableInputs(), 1, midiInputArray, 0, midiInputLength  - 1);
-		// } else {
-		// 	midiInputArray[0] = "NO INPUT DEVICE";
-		// }
-
-
-		// if (midiOutputLength > 1) {
-		// 	arrayCopy(MidiBus.availableOutputs(), 1, midiOutputArray, 0, midiOutputLength  - 1);
-		// } else {
-		// 	midiOutputArray[0] = "NO OUTPUT DEVICE";
-		// }
-
-		arrayCopy(MidiBus.availableInputs(), midiInputArray);
-		arrayCopy(MidiBus.availableOutputs(), midiOutputArray);
-
-	}
-
 //--------------------------------------------------------------
 // MARK: ---------- TOUCH EVENTS ----------
 //--------------------------------------------------------------
 
 	void touchDown() {
+		if (mouseY < headerHeight) {
+			if (midiSelectMenu == true) {
+				midiSelectMenu = false;
+			} else {
+				midiSelectMenu = true;
+			}
+		}
+
+
 		inputDevices.touchDown();
 		outputDevices.touchDown();
+		midiSubmit.touchDown();
 	}
 
 	void touchUp() {
 		inputDevices.touchUp();
 		outputDevices.touchUp();
+		midiSubmit.touchUp();
 	}
 
 }

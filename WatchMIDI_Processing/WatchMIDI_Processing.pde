@@ -4,8 +4,6 @@ import http.*;
 SimpleHTTPServer server;
 MidiBus myBus; // The MidiBus
 
-
-
 GUI gui;
 BUTTON button;
 
@@ -28,22 +26,19 @@ void setup() {
   // background(bgColor);
 
   // println(MidiBus.availableInputs());
-  // printArray(MidiBus.availableOutputs());
+  printArray(MidiBus.availableOutputs());
 
-  myBus = new MidiBus(this, -1, 3);
+  myBus = new MidiBus(this, 0, 0);
   // myBus.close();
 }
 
 void update() {
-  gui.midiDeviceUpdate();
+  gui.update();
 }
 
 void draw() {
   update();
-  gui.backgroundDraw();
-  gui.headerDraw();
-
-  gui.midiDeviceInputOutputDraw();
+  gui.draw();
 
 
   // gui.midiThruDraw();
@@ -72,6 +67,7 @@ void sendControl(byte device, byte format, byte command) {
 
 void mousePressed() {
   gui.touchDown();
+
 }
 
 void mouseReleased() {
